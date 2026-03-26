@@ -19,7 +19,8 @@
 		{"name":"combiclock.timer.js","url":"timer.js"},
 		{"name":"combiclock.timer.alert.js","url":"timer.alert.js"},
 		{"name":"combiclock.alarm.js","url":"alarm.js"},
-		{"name":"combiclock.alarm.alert.js","url":"alarm.alert.js"}
+		{"name":"combiclock.alarm.alert.js","url":"alarm.alert.js"},
+		{"name":"combiclock.events.js","url":"events.js"}
 	],
 	"data": [{"name":"combiclock.json"},{"name":"combiclock.stopwatch.json"},{"name":"combiclock.timer.json"},{"name":"combiclock.alarm.json"}]
 }

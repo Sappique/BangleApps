@@ -1,25 +1,25 @@
 var combiclock = require("combiclock.lib.js");
 var settings = require('Storage').readJSON("combiclock.json", true) || {};
 settings = Object.assign({
-  "dateFont":"6x8",
-  "dateFontSize":2,
-  "dowFont":"6x8",
-  "dowFontSize":2,
-  "specialFont":"6x8",
-  "specialFontSize":2,
-  "shortDate":true,
-  "showStopwatches":true,
-  "showTimers":true,
-}, settings.clock||{});
+  "dateFont": "6x8",
+  "dateFontSize": 2,
+  "dowFont": "6x8",
+  "dowFontSize": 2,
+  "specialFont": "6x8",
+  "specialFontSize": 2,
+  "shortDate": true,
+  "showStopwatches": true,
+  "showTimers": true,
+}, settings.clock || {});
 
 var stopwatches = [], timers = [];
 if (settings.showStopwatches) {
   stopwatches = require("Storage").readJSON("combiclock.stopwatch.json") || [];
-  stopwatches = stopwatches.filter(e=>e.start||e.time);
+  stopwatches = stopwatches.filter(e => e.start || e.time);
 }
 if (settings.showTimers) {
   timers = require("Storage").readJSON("combiclock.timer.json") || [];
-  timers = timers.filter(e=>e.start||e.timeAdd);
+  timers = timers.filter(e => e.start || e.timeAdd);
 }
 
 // Calendar
@@ -27,20 +27,30 @@ var calendar = [];
 var nextEvent = null;
 
 function updateCalendar() {
-  calendar = require("Storage").readJSON("android.calendar.json",true)||[];
+  calendar = require("Storage").readJSON("android.calendar.json", true) || [];
   // Filter out all-day events, keep only future non-allDay events
   var now = getTime();
   // Filter: no all-day events, only today or tomorrow, only future
   var todayStart = new Date();
-  todayStart.setHours(0,0,0,0);
+  todayStart.setHours(0, 0, 0, 0);
   var tomorrowEnd = new Date(todayStart.getTime() + 2 * 86400000);
-  calendar = calendar.filter(e => !e.allDay && e.timestamp > now && e.timestamp < tomorrowEnd.getTime()/1000);
-  calendar.sort((a,b) => a.timestamp - b.timestamp);
+  calendar = calendar.filter(e => !e.allDay && e.timestamp > now && e.timestamp < tomorrowEnd.getTime() / 1000);
+  calendar.sort((a, b) => a.timestamp - b.timestamp);
   nextEvent = calendar.length ? calendar[0] : null;
 }
 
 function zp(str) {
-  return ("0"+str).substr(-2);
+  return ("0" + str).substr(-2);
+}
+
+// Truncate text to fit maxW, appending "..." if shortened
+function truncate(text, maxW) {
+  if (g.stringMetrics(text).width <= maxW) return text;
+  var ellW = g.stringMetrics("...").width;
+  var t = text;
+  while (g.stringMetrics(t).width + ellW > maxW && t.length > 1)
+    t = t.slice(0, -1);
+  return t.trimEnd() + "...";
 }
 
 // timeout used to update every minute
@@ -52,7 +62,7 @@ var dragBorder;
 // schedule a draw for the next minute
 function queueDraw(timeout, interval, func) {
   if (timeout) clearTimeout(timeout);
-  timeout = setTimeout(function() {
+  timeout = setTimeout(function () {
     timeout = undefined;
     func();
   }, interval - (Date.now() % interval));
@@ -61,39 +71,39 @@ function queueDraw(timeout, interval, func) {
 function drawSpecial() {
   var interval = 60000;
   var stopwatch = 0, timer = 0, time;
-  var x = g.getWidth()/4;
+  var x = g.getWidth() / 4;
   g.setColor(g.theme.fg);
-  g.setFontAlign(0,0).setFont(settings.specialFont, settings.specialFontSize);
-  var y = Bangle.appRect.y + g.stringMetrics("00:00").height/2;
-  g.clearRect(Bangle.appRect.x, Bangle.appRect.y, Bangle.appRect.x2, Bangle.appRect.y+g.stringMetrics("00:00").height);
+  g.setFontAlign(0, 0).setFont(settings.specialFont, settings.specialFontSize);
+  var y = Bangle.appRect.y + g.stringMetrics("00:00").height / 2;
+  g.clearRect(Bangle.appRect.x, Bangle.appRect.y, Bangle.appRect.x2, Bangle.appRect.y + g.stringMetrics("00:00").height);
 
   if (stopwatches.length) {
     time = combiclock.getTime(stopwatches[stopwatch]);
     g.drawString(combiclock.formatTime(time, true), x, y);
-    if (Math.floor(time/3600000) === 0) interval = 1000;
+    if (Math.floor(time / 3600000) === 0) interval = 1000;
     stopwatch++;
   } else if (timers.length > 1) {
     time = timers[timer].time - combiclock.getTime(timers[timer]);
     g.drawString(combiclock.formatTime(time, true), x, y);
-    if (Math.floor(time/3600000) === 0) interval = 1000;
+    if (Math.floor(time / 3600000) === 0) interval = 1000;
     timer++;
   }
-  x += g.getWidth()/2;
+  x += g.getWidth() / 2;
   if (timers.length) {
     time = timers[timer].time - combiclock.getTime(timers[timer]);
     g.drawString(combiclock.formatTime(time, true), x, y);
-    if (Math.floor(time/3600000) === 0) interval = 1000;
+    if (Math.floor(time / 3600000) === 0) interval = 1000;
   } else if (stopwatches.length > 1) {
     time = combiclock.getTime(stopwatches[stopwatch]);
     g.drawString(combiclock.formatTime(time, true), x, y);
-    if (Math.floor(time/3600000) === 0) interval = 1000;
+    if (Math.floor(time / 3600000) === 0) interval = 1000;
   }
   queueDraw(drawSpecialTimeout, interval, drawSpecial);
 }
 
 function drawCalendarEvent() {
   // Draw area below the time
-  var calY = dragBorder + 4;
+  var calY = dragBorder + 2;
   var w = g.getWidth();
 
   g.clearRect(0, calY, w, Bangle.appRect.y2);
@@ -109,7 +119,7 @@ function drawCalendarEvent() {
   if (minsUntil < 1) untilStr = "T-0";
   else if (minsUntil < 60) untilStr = "T-" + minsUntil + "m";
   else {
-    var hrs = Math.floor(minsUntil/60);
+    var hrs = Math.floor(minsUntil / 60);
     var mins = minsUntil % 60;
     untilStr = "T-" + hrs + "h" + (mins ? zp(mins) + "m" : "");
   }
@@ -119,7 +129,7 @@ function drawCalendarEvent() {
   // Color bar on the left
   if (nextEvent.color) {
     var oldColor = g.getColor();
-    g.setColor("#"+(0x1000000+Number(nextEvent.color)).toString(16).padStart(6,"0"));
+    g.setColor("#" + (0x1000000 + Number(nextEvent.color)).toString(16).padStart(6, "0"));
     g.fillRect(0, calY, 4, Bangle.appRect.y2);
     g.setColor(oldColor);
   }
@@ -128,35 +138,28 @@ function drawCalendarEvent() {
   g.setFontAlign(-1, -1);
 
   // Title (bigger font, at top, single line truncated)
-  g.setFont("6x8", 2);
-  var title = nextEvent.title;
-  while (g.stringMetrics(title).width > maxW && title.length > 1)
-    title = title.slice(0, -1);
-  if (title.length < nextEvent.title.length) title += "...";
-  g.drawString(title, x, calY);
-  calY += g.stringMetrics(title).height + 1;
+  g.setFont("12x20", 1);
+  g.drawString(truncate(nextEvent.title, maxW), x, calY);
+  calY += 21;
 
   // Start time + countdown
-  g.setFont("6x8", 1);
+  g.setFont("6x8", 2);
   g.drawString(timeStr + " (" + untilStr + ")", x, calY);
-  calY += 9;
+  calY += 17;
 
   // Location if set (single line truncated)
   if (nextEvent.location) {
-    var loc = nextEvent.location;
-    while (g.stringMetrics(loc).width > maxW && loc.length > 1)
-      loc = loc.slice(0, -1);
-    if (loc.length < nextEvent.location.length) loc += "...";
-    g.drawString(loc, x, calY);
+    g.setFont("6x8", 1);
+    g.drawString(truncate(nextEvent.location, maxW), x, calY);
   }
 }
 
 function draw() {
-  var x = g.getWidth()/2;
+  var x = g.getWidth() / 2;
   g.reset();
   var date = new Date();
-  var timeStr = require("locale").time(date,1);
-  var dateStr = require("locale").date(date,settings.shortDate).toUpperCase();
+  var timeStr = require("locale").time(date, 1);
+  var dateStr = require("locale").date(date, settings.shortDate).toUpperCase();
   var dowStr = require("locale").dow(date).toUpperCase();
 
   // Start y position after widget area + special display
@@ -172,17 +175,17 @@ function draw() {
   g.clearRect(Bangle.appRect.x, y, Bangle.appRect.x2, Bangle.appRect.y2);
 
   // Draw day of week (above date, above time)
-  g.setFontAlign(0,-1).setFont(settings.dowFont, settings.dowFontSize);
+  g.setFontAlign(0, -1).setFont(settings.dowFont, settings.dowFontSize);
   g.drawString(dowStr, x, y);
   y += g.stringMetrics(dowStr).height;
 
   // Draw date
-  g.setFontAlign(0,-1).setFont(settings.dateFont, settings.dateFontSize);
+  g.setFontAlign(0, -1).setFont(settings.dateFont, settings.dateFontSize);
   g.drawString(dateStr, x, y);
-  y += g.stringMetrics(dateStr).height + 2;
+  y += g.stringMetrics(dateStr).height;
 
-  // Draw time in monospace font
-  g.setFontAlign(0,-1).setFont("12x20", 2);
+  // Draw time in monospace font (2x wide, 3x tall)
+  g.setFontAlign(0, -1).setFont("12x20", 2 + (3 << 8));
   g.drawString(timeStr, x, y);
   y += g.stringMetrics(timeStr).height;
 
@@ -196,21 +199,23 @@ function draw() {
   queueDraw(drawTimeout, 60000, draw);
 }
 
-if (process.env.HWVERSION==1) {
-  setWatch(()=>load("combiclock.stopwatch.js"), BTN4);
-  setWatch(()=>load("combiclock.timer.js"), BTN5);
-  setWatch(()=>load("combiclock.alarm.js"), BTN3);
-  setWatch(()=>load("combiclock.alarm.js"), BTN1);
+if (process.env.HWVERSION == 1) {
+  setWatch(() => load("combiclock.stopwatch.js"), BTN4);
+  setWatch(() => load("combiclock.timer.js"), BTN5);
+  setWatch(() => load("combiclock.alarm.js"), BTN3);
+  setWatch(() => load("combiclock.alarm.js"), BTN1);
 } else {
-  var absY, lastX=0, lastY=0;
-  Bangle.on('drag', e=>{
+  var absY, lastX = 0, lastY = 0;
+  Bangle.on('drag', e => {
     if (!e.b) {
-      if (lastX > 5) { // right
+      if (lastX > 50) { // right
         load("combiclock.timer.js");
-      } else if (lastX < -5) { // left
+      } else if (lastX < -50) { // left
         load("combiclock.stopwatch.js");
-      } else if (lastY > 5) { // down
+      } else if (lastY > 50) { // down
         load("combiclock.alarm.js");
+      } else if (lastY < -50) { // up
+        load("combiclock.events.js");
       }
       lastX = 0;
       lastY = 0;
@@ -231,6 +236,6 @@ draw();
 if (stopwatches.length || timers.length) drawSpecial();
 
 // Update calendar every minute
-setInterval(function() {
+setInterval(function () {
   updateCalendar();
 }, 60000);
