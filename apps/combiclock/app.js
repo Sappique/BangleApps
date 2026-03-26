@@ -163,32 +163,48 @@ function draw() {
   var dateStr = require("locale").date(date, settings.shortDate).toUpperCase();
   var dowStr = require("locale").dow(date).toUpperCase();
 
-  // Start y position after widget area + special display
-  var y = Bangle.appRect.y;
+  // Calculate content heights to center vertically
   var specialH = 0;
   if (stopwatches.length || timers.length) {
     g.setFont(settings.specialFont, settings.specialFontSize);
     specialH = g.stringMetrics("00:00").height;
   }
-  y += specialH;
+  g.setFont(settings.dowFont, settings.dowFontSize);
+  var dowH = g.stringMetrics(dowStr).height;
+  g.setFont(settings.dateFont, settings.dateFontSize);
+  var dateH = g.stringMetrics(dateStr).height;
+  g.setFont("12x20", 2);
+  var timeH = g.stringMetrics(timeStr).height;
+
+  // Event area height estimate
+  var evtH = 0;
+  if (nextEvent) {
+    evtH = 21 + 17; // title + time line
+    if (nextEvent.location) evtH += 9;
+  }
+
+  var totalH = dowH + dateH + timeH + 2 + evtH;
+  var areaTop = Bangle.appRect.y + specialH;
+  var areaBot = Bangle.appRect.y2;
+  var y = areaTop + Math.max(0, (areaBot - areaTop - totalH) / 2);
 
   // Clear from below special area to bottom
-  g.clearRect(Bangle.appRect.x, y, Bangle.appRect.x2, Bangle.appRect.y2);
+  g.clearRect(Bangle.appRect.x, areaTop, Bangle.appRect.x2, Bangle.appRect.y2);
 
   // Draw day of week (above date, above time)
   g.setFontAlign(0, -1).setFont(settings.dowFont, settings.dowFontSize);
   g.drawString(dowStr, x, y);
-  y += g.stringMetrics(dowStr).height;
+  y += dowH;
 
   // Draw date
   g.setFontAlign(0, -1).setFont(settings.dateFont, settings.dateFontSize);
   g.drawString(dateStr, x, y);
-  y += g.stringMetrics(dateStr).height;
+  y += dateH;
 
   // Draw time in monospace font
   g.setFontAlign(0, -1).setFont("12x20", 2);
   g.drawString(timeStr, x, y);
-  y += g.stringMetrics(timeStr).height;
+  y += timeH + 2;
 
   // dragBorder separates time area from calendar area (for swipe detection)
   dragBorder = y;
