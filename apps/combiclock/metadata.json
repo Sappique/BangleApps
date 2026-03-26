@@ -1,0 +1,25 @@
+{
+	"id": "combiclock",
+	"name": "Combi Clock",
+	"shortName":"Combi Clock",
+	"version": "0.01",
+	"description": "A clock with stopwatches, timers, alarms, and calendar events.",
+	"icon": "app-icon.png",
+	"type": "clock",
+	"tags": "clock",
+	"supports" : ["BANGLEJS","BANGLEJS2"],
+	"readme": "README.md",
+	"storage": [
+		{"name":"combiclock.app.js","url":"app.js"},
+		{"name":"combiclock.boot.js","url":"boot.js"},
+		{"name":"combiclock.lib.js","url":"lib.js"},
+		{"name":"combiclock.wid.js","url":"wid.js"},
+		{"name":"combiclock.settings.js","url":"settings.js"},
+		{"name":"combiclock.stopwatch.js","url":"stopwatch.js"},
+		{"name":"combiclock.timer.js","url":"timer.js"},
+		{"name":"combiclock.timer.alert.js","url":"timer.alert.js"},
+		{"name":"combiclock.alarm.js","url":"alarm.js"},
+		{"name":"combiclock.alarm.alert.js","url":"alarm.alert.js"}
+	],
+	"data": [{"name":"combiclock.json"},{"name":"combiclock.stopwatch.json"},{"name":"combiclock.timer.json"},{"name":"combiclock.alarm.json"}]
+}
