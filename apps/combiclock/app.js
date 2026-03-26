@@ -185,8 +185,8 @@ function draw() {
   g.drawString(dateStr, x, y);
   y += g.stringMetrics(dateStr).height;
 
-  // Draw time in monospace font (2x wide, 3x tall)
-  g.setFontAlign(0, -1).setFont("12x20", 2 + (3 << 8));
+  // Draw time in monospace font
+  g.setFontAlign(0, -1).setFont("12x20", 2);
   g.drawString(timeStr, x, y);
   y += g.stringMetrics(timeStr).height;
 
