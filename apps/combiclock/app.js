@@ -50,7 +50,8 @@ function truncate(text, maxW) {
   var t = text;
   while (g.stringMetrics(t).width + ellW > maxW && t.length > 1)
     t = t.slice(0, -1);
-  return t.trimEnd() + "...";
+  while (t.length > 1 && t[t.length - 1] === " ") t = t.slice(0, -1);
+  return t + "...";
 }
 
 // timeout used to update every minute
