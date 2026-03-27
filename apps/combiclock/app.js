@@ -159,11 +159,11 @@ function draw() {
   var x = g.getWidth() / 2;
   g.reset();
   var date = new Date();
-  var timeStr = require("locale").time(date, 1);
-  var dateStr = require("locale").date(date, settings.shortDate).toUpperCase();
+  var timeStr = zp(date.getHours()) + ":" + zp(date.getMinutes());
+  var dateStr = zp(date.getDate()) + "." + zp(date.getMonth()+1) + "." + date.getFullYear();
   var dowStr = require("locale").dow(date).toUpperCase();
 
-  // Calculate content heights to center vertically
+  // Calculate heights
   var specialH = 0;
   if (stopwatches.length || timers.length) {
     g.setFont(settings.specialFont, settings.specialFontSize);
@@ -176,25 +176,26 @@ function draw() {
   g.setFont("12x20", 2);
   var timeH = g.stringMetrics(timeStr).height;
 
-  // Event area height estimate
   var evtH = 0;
   if (nextEvent) {
-    evtH = 21 + 17; // title + time line
+    evtH = 2 + 21 + 17; // gap + title + time line
     if (nextEvent.location) evtH += 9;
   }
 
-  var totalH = dowH + dateH + timeH + 2 + evtH;
   var areaTop = Bangle.appRect.y + specialH;
-  var areaBot = Bangle.appRect.y2;
-  var y = areaTop + Math.max(0, (areaBot - areaTop - totalH) / 2);
-
-  // Clear from below special area to bottom
   g.clearRect(Bangle.appRect.x, areaTop, Bangle.appRect.x2, Bangle.appRect.y2);
 
-  // Draw day of week (above date, above time)
+  // Day of week pinned at top
+  var y = areaTop;
   g.setFontAlign(0, -1).setFont(settings.dowFont, settings.dowFontSize);
   g.drawString(dowStr, x, y);
   y += dowH;
+
+  // Center date + time + event in remaining space
+  var contentH = dateH + timeH + evtH;
+  var remainTop = y;
+  var remainBot = Bangle.appRect.y2;
+  y = remainTop + Math.max(0, (remainBot - remainTop - contentH) / 2);
 
   // Draw date
   g.setFontAlign(0, -1).setFont(settings.dateFont, settings.dateFontSize);
@@ -204,9 +205,9 @@ function draw() {
   // Draw time in monospace font
   g.setFontAlign(0, -1).setFont("12x20", 2);
   g.drawString(timeStr, x, y);
-  y += timeH + 2;
+  y += timeH;
 
-  // dragBorder separates time area from calendar area (for swipe detection)
+  // dragBorder separates time area from calendar area
   dragBorder = y;
 
   // Draw calendar event

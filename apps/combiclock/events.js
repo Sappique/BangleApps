@@ -1,6 +1,6 @@
 // Scrollable list of all upcoming calendar events grouped by day
 var w = g.getWidth();
-var ROW_H = 40;
+var ROW_H = 44;
 
 function zp(str) {
   return ("0"+str).substr(-2);
@@ -84,9 +84,6 @@ E.showScroller({
       var info = zp(evtTime.getHours()) + ":" + zp(evtTime.getMinutes());
       if (evt.location) info += " - " + evt.location;
       g.drawString(truncate(info, maxW), x, r.y + 22);
-
-      // Separator line
-      g.drawLine(r.x, r.y+r.h-1, r.x+r.w-1, r.y+r.h-1);
     }
   },
   back: function() { load(); }
