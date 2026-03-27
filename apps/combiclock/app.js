@@ -57,9 +57,6 @@ function truncate(text, maxW) {
 // timeout used to update every minute
 var drawTimeout;
 var drawSpecialTimeout;
-// border between time and date/dow
-var dragBorder;
-
 // schedule a draw for the next minute
 function queueDraw(timeout, interval, func) {
   if (timeout) clearTimeout(timeout);
@@ -102,9 +99,7 @@ function drawSpecial() {
   queueDraw(drawSpecialTimeout, interval, drawSpecial);
 }
 
-function drawCalendarEvent() {
-  // Draw area below the time
-  var calY = dragBorder + 2;
+function drawCalendarEvent(calY) {
   var w = g.getWidth();
 
   g.clearRect(0, calY, w, Bangle.appRect.y2);
@@ -191,27 +186,23 @@ function draw() {
   g.drawString(dowStr, x, y);
   y += dowH;
 
-  // Center date + time + event in remaining space
-  var contentH = dateH + timeH + evtH;
-  var remainTop = y;
-  var remainBot = Bangle.appRect.y2;
-  y = remainTop + Math.max(0, (remainBot - remainTop - contentH) / 2);
-
-  // Draw date
+  // Date pinned below weekday
   g.setFontAlign(0, -1).setFont(settings.dateFont, settings.dateFontSize);
   g.drawString(dateStr, x, y);
-  y += dateH;
+  var topEnd = y + dateH;
 
-  // Draw time in monospace font
+  // Event pinned at bottom
+  var evtTop = Bangle.appRect.y2 - evtH;
+
+  // Time vertically centered between date and event area
+  var timeZoneTop = topEnd;
+  var timeZoneBot = nextEvent ? evtTop : Bangle.appRect.y2;
+  var timeY = timeZoneTop + (timeZoneBot - timeZoneTop - timeH) / 2;
   g.setFontAlign(0, -1).setFont("12x20", 2);
-  g.drawString(timeStr, x, y);
-  y += timeH;
+  g.drawString(timeStr, x, timeY);
 
-  // dragBorder separates time area from calendar area
-  dragBorder = y;
-
-  // Draw calendar event
-  drawCalendarEvent();
+  // Draw calendar event at bottom
+  drawCalendarEvent(evtTop);
 
   // queue draw in one minute
   queueDraw(drawTimeout, 60000, draw);
